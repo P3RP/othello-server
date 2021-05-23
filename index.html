@@ -14,31 +14,52 @@
       <form class="form-inline">
         <div class="form-group">
           <label for="msgForm">Message: </label>
-          <input type="text" class="form-control" id="msgForm" />
+          <input type="text" class="form-radio" id="msgForm" />
+          <input
+            type="radio"
+            value="create"
+            class="form-control"
+            name="abcabc"
+            id="typeForm"
+          >create</input>
+          <input type="radio" name="abcabc" value="join" class="form-radio" id="typeForm" >join</input>
         </div>
         <button type="submit" class="btn btn-primary">Send</button>
       </form>
       <div id="chatLogs"></div>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-    <script src="http://127.0.0.1:3000/socket.io/socket.io.js"></script>
+    <script src="http://127.0.0.1:3001/socket.io/socket.io.js"></script>
     <script>
       $(function () {
         // socket.io 서버에 접속한다
         var socket = io();
 
         // 서버로 자신의 정보를 전송한다.
-        socket.emit("login", {
-          // name: "ungmo2",
-          name: makeRandomName(),
-          room: makeRandomName(),
-        });
+        // socket.emit("login", {
+        //   // name: "ungmo2",
+        //   name: makeRandomName(),
+        //   room: makeRandomName(),
+        // });
 
         // 서버로부터의 메시지가 수신되면
         socket.on("login", function (data) {
-          $("#chatLogs").append(
-            "<div><strong>" + data + "</strong> has joined</div>"
-          );
+          console.log(data)
+        });
+
+        socket.on("create", function (data) {
+          console.log("create")
+          console.log(data)
+        });
+
+        socket.on("join", function (data) {
+          console.log("join")
+          console.log(data)
+        });
+
+        socket.on("newPlayer", function (data) {
+          console.log("newPlayer")
+          console.log(data)
         });
 
         // 서버로부터의 메시지가 수신되면
@@ -57,9 +78,11 @@
         $("form").submit(function (e) {
           e.preventDefault();
           var $msgForm = $("#msgForm");
+          var $typeForm = $("input[name='abcabc']:checked");
+
 
           // 서버로 메시지를 전송한다.
-          socket.emit("chat", { msg: $msgForm.val() });
+          socket.emit("login", { name: "abc", room: $msgForm.val(), type: $typeForm.val() });
           $msgForm.val("");
         });
 
