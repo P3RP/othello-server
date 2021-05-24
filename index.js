@@ -46,15 +46,12 @@ io.on("connection", (socket) => {
     // 방 생성의 경우
     if (data.type === "create") {
       // 새로운 방 정보 생성
-      room_info[room_name] = {
-        player: [
-          {
-            id: socket.id,
-            name: data.name,
-          },
-        ],
-        ready: [false, false],
-      };
+      room_info[room_name] = [
+        {
+          id: socket.id,
+          name: data.name,
+        },
+      ];
 
       // 방 이름 소켓에 저장
       socket.room = room_name;
@@ -71,13 +68,13 @@ io.on("connection", (socket) => {
       // 기존 방 존재 여부 확인
       if (!(data.room in room_info)) {
         console.log(socket.id + " access Wrong Room");
-        socket.emit("e_msg", data.room + " is not valid!");
+        socket.emit("eMsg", data.room + " is not valid!");
         return;
       }
 
       // 기존 방에 사용자 추가
       room_name = data.room;
-      room_info[room_name].player.push({
+      room_info[room_name].push({
         id: socket.id,
         name: data.name,
       });
@@ -89,11 +86,11 @@ io.on("connection", (socket) => {
       socket.emit("join", {
         name: data.name,
         roomId: data.room,
-        opponent: room_info[room_name].player[0].name,
+        opponent: room_info[room_name][0].name,
       });
 
       // 상대방에게 클라이언트 정보 전달
-      io.to(room_info[room_name].player[0].id).emit("newPlayer", data.name);
+      io.to(room_info[room_name][0].id).emit("newPlayer", data.name);
     }
     console.log("room info");
     console.log(room_info);
@@ -102,16 +99,57 @@ io.on("connection", (socket) => {
   // 클라이언트로부터 버튼 클릭 수신
   socket.on("play", (data) => {
     // 상대방에게 클라이언트 정보 전달
-    io.to(room_info[data.room].player[1 - data.player].id).emit("play", data);
+    io.to(room_info[data.room][1 - data.player].id).emit("play", data);
     console.log(socket.id + " : Play");
   });
 
-  // force client disconnect from server
-  socket.on("forceDisconnect", function () {
+  // 클라이언트로부터 나가기 수신
+  socket.on("exit", (data) => {
+    // 방 정보에서 해당 사용자 제거
+    room_info[data.room].splice(data.player, data.player + 1);
+
+    // 방에 클라이언트가 남아있는지 여부 확인
+    if (room_info[data.room].length == 1) {
+      // 남아있는 경우
+      // 남은 클라이언트한테 기존 클라이언트 나감 사실 알리기
+      io.to(room_info[data.room][0].id).emit("opponentExit");
+    } else if (room_info[data.room].length == 0) {
+      // 남아있지 않은 경우
+      // 방 제거
+      delete room_info[data.room];
+    } else {
+      return;
+    }
+  });
+
+  // 클라이언트 강제 Disconnect
+  socket.on("forceDisconnect", () => {
     socket.disconnect();
   });
 
-  socket.on("disconnect", function () {
+  // 클라이언트 Disconnect인 경우
+  socket.on("disconnect", () => {
+    // 해당 클라이언트가 있는 방 찾기
+    for (const [room, player] of Object.entries(room_info)) {
+      const target = player.findIndex((e) => e.id === socket.id);
+      if (target !== -1) {
+        // 방 정보에서 해당 사용자 제거
+        room_info[room].splice(target, target + 1);
+
+        // 방에 클라이언트가 남아있는지 여부 확인
+        if (room_info[room].length == 1) {
+          // 남아있는 경우
+          // 남은 클라이언트한테 기존 클라이언트 나감 사실 알리기
+          io.to(room_info[room][0].id).emit("opponentExit");
+        } else if (room_info[room].length == 0) {
+          // 남아있지 않은 경우
+          // 방 제거
+          delete room_info[room];
+        } else {
+          return;
+        }
+      }
+    }
     console.log("user disconnected: " + socket.name);
   });
 });
