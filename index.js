@@ -1,7 +1,12 @@
 var app = require("express")();
 var server = require("http").createServer(app);
 // http server를 socket.io server로 upgrade한다
-var io = require("socket.io")(server);
+var io = require("socket.io")(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
 
 const room_info = {};
 
@@ -83,13 +88,10 @@ io.on("connection", (socket) => {
       socket.room = room_name;
 
       // 현재 클라이언트에게 정보 전달
-      socket.emit("join", room_info[room_name].player[0]);
+      socket.emit("join", room_info[room_name].player[0].name);
 
       // 상대방에게 클라이언트 정보 전달
-      io.to(room_info[room_name].player[0].id).emit("newPlayer", {
-        id: socket.id,
-        name: data.name,
-      });
+      io.to(room_info[room_name].player[0].id).emit("newPlayer", data.name);
     }
     console.log("room info");
     console.log(room_info);

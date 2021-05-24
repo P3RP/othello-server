@@ -42,49 +42,49 @@
         //   room: makeRandomName(),
         // });
 
-        // 서버로부터의 메시지가 수신되면
-        socket.on("login", function (data) {
-          console.log(data)
-        });
+        // // 서버로부터의 메시지가 수신되면
+        // socket.on("login", function (data) {
+        //   console.log(data)
+        // });
 
-        socket.on("create", function (data) {
-          console.log("create")
-          console.log(data)
-        });
+        // socket.on("create", function (data) {
+        //   console.log("create")
+        //   console.log(data)
+        // });
 
-        socket.on("join", function (data) {
-          console.log("join")
-          console.log(data)
-        });
+        // socket.on("join", function (data) {
+        //   console.log("join")
+        //   console.log(data)
+        // });
 
-        socket.on("newPlayer", function (data) {
-          console.log("newPlayer")
-          console.log(data)
-        });
+        // socket.on("newPlayer", function (data) {
+        //   console.log("newPlayer")
+        //   console.log(data)
+        // });
 
-        // 서버로부터의 메시지가 수신되면
-        socket.on("chat", function (data) {
-          console.log(data.from.userid);
-          $("#chatLogs").append(
-            "<div>" +
-              data.msg +
-              " : from <strong>" +
-              data.from.name +
-              "</strong></div>"
-          );
-        });
+        // // 서버로부터의 메시지가 수신되면
+        // socket.on("chat", function (data) {
+        //   console.log(data.from.userid);
+        //   $("#chatLogs").append(
+        //     "<div>" +
+        //       data.msg +
+        //       " : from <strong>" +
+        //       data.from.name +
+        //       "</strong></div>"
+        //   );
+        // });
 
-        // Send 버튼이 클릭되면
-        $("form").submit(function (e) {
-          e.preventDefault();
-          var $msgForm = $("#msgForm");
-          var $typeForm = $("input[name='abcabc']:checked");
+        // // Send 버튼이 클릭되면
+        // $("form").submit(function (e) {
+        //   e.preventDefault();
+        //   var $msgForm = $("#msgForm");
+        //   var $typeForm = $("input[name='abcabc']:checked");
 
 
-          // 서버로 메시지를 전송한다.
-          socket.emit("login", { name: "abc", room: $msgForm.val(), type: $typeForm.val() });
-          $msgForm.val("");
-        });
+        //   // 서버로 메시지를 전송한다.
+        //   socket.emit("login", { name: "abc", room: $msgForm.val(), type: $typeForm.val() });
+        //   $msgForm.val("");
+        // });
 
         function makeRandomName() {
           var name = "";
