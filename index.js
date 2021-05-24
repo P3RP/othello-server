@@ -19,12 +19,6 @@ const makeRandomName = () => {
   return name;
 };
 
-// React 연동 시 필요 없음
-// localhost:3000으로 서버에 접속하면 클라이언트로 index.html을 전송한다
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/index.html");
-});
-
 // connection event handler
 // connection이 수립되면 event handler function의 인자로 socket인 들어온다
 io.on("connection", (socket) => {
@@ -66,7 +60,10 @@ io.on("connection", (socket) => {
       socket.room = room_name;
 
       // 클라이언트에 현재 방 상태 전달
-      socket.emit("create", room_name);
+      socket.emit("create", {
+        name: data.name,
+        room: room_name,
+      });
     }
     // 방 참여의 경우
     else if (data.type === "join") {
@@ -74,6 +71,7 @@ io.on("connection", (socket) => {
       // 기존 방 존재 여부 확인
       if (!(data.room in room_info)) {
         console.log(socket.id + " access Wrong Room");
+        socket.emit("e_msg", data.room + " is not valid!");
         return;
       }
 
@@ -88,7 +86,11 @@ io.on("connection", (socket) => {
       socket.room = room_name;
 
       // 현재 클라이언트에게 정보 전달
-      socket.emit("join", room_info[room_name].player[0].name);
+      socket.emit("join", {
+        name: data.name,
+        roomId: data.room,
+        opponent: room_info[room_name].player[0].name,
+      });
 
       // 상대방에게 클라이언트 정보 전달
       io.to(room_info[room_name].player[0].id).emit("newPlayer", data.name);
@@ -97,32 +99,11 @@ io.on("connection", (socket) => {
     console.log(room_info);
   });
 
-  //
-
-  // 클라이언트로부터의 메시지가 수신되면
-  socket.on("chat", function (data) {
-    console.log("Message from %s: %s : %s", socket.name, data.msg, data.type);
-
-    var msg = {
-      from: {
-        name: socket.name,
-        userid: socket.userid,
-      },
-      msg: data.msg,
-    };
-
-    // 메시지를 전송한 클라이언트를 제외한 모든 클라이언트에게 메시지를 전송한다
-    // socket.broadcast.emit("chat", msg);
-    io.emit("chat", msg);
-
-    // 메시지를 전송한 클라이언트에게만 메시지를 전송한다
-    // socket.emit('s2c chat', msg);
-
-    // 접속된 모든 클라이언트에게 메시지를 전송한다
-    // io.emit('s2c chat', msg);
-
-    // 특정 클라이언트에게만 메시지를 전송한다
-    // io.to(id).emit('s2c chat', data);
+  // 클라이언트로부터 버튼 클릭 수신
+  socket.on("play", (data) => {
+    // 상대방에게 클라이언트 정보 전달
+    io.to(room_info[data.room].player[1 - data.player].id).emit("play", data);
+    console.log(socket.id + " : Play");
   });
 
   // force client disconnect from server
