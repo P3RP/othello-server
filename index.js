@@ -120,6 +120,8 @@ io.on("connection", (socket) => {
     } else {
       return;
     }
+    console.log("room info");
+    console.log(room_info);
   });
 
   // 클라이언트 강제 Disconnect
@@ -151,6 +153,8 @@ io.on("connection", (socket) => {
       }
     }
     console.log("user disconnected: " + socket.name);
+    console.log("room info");
+    console.log(room_info);
   });
 });
 
